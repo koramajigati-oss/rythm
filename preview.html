@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Rhythm Game</title>
+<style>
+body{background:#111;color:#fff;text-align:center;font-family:sans-serif}
+#game{position:relative;width:360px;height:600px;margin:auto;background:#222;overflow:hidden}
+.lane{position:absolute;top:0;bottom:0;width:25%;border-right:1px solid #444;transition:background .1s}
+.note{position:absolute;width:80px;height:20px;background:#fff;border-radius:5px}
+#line{position:absolute;bottom:100px;left:0;right:0;height:4px;background:red}
+#msg{height:30px;font-size:24px;font-weight:bold}
+</style>
+</head>
+<body>
+<h2>リズムゲーム</h2>
+<div id="score">Score: 0</div>
+<div id="msg"></div>
+<div id="game">
+<div class="lane" style="left:0%"></div>
+<div class="lane" style="left:25%"></div>
+<div class="lane" style="left:50%"></div>
+<div class="lane" style="left:75%"></div>
+<div id="line"></div>
+</div>
+<p>D F J K キーでプレイ</p>
+
+<script>
+const lanes=document.querySelectorAll('.lane');
+const game=document.getElementById('game');
+const scoreEl=document.getElementById('score');
+const msg=document.getElementById('msg');
+const notes=[];
+const keys=['d','f','j','k'];
+let score=0;
+
+function spawn(){
+ let lane=Math.floor(Math.random()*4);
+ let el=document.createElement('div');
+ el.className='note';
+ el.style.left=(lane*25+1.5)+'%';
+ game.appendChild(el);
+ notes.push({lane:lane,y:0,el:el});
+}
+setInterval(spawn,800);
+
+function loop(){
+ for(let i=notes.length-1;i>=0;i--){
+   notes[i].y+=4;
+   notes[i].el.style.top=notes[i].y+'px';
+   if(notes[i].y>600){
+      notes[i].el.remove();
+      notes.splice(i,1);
+   }
+ }
+ requestAnimationFrame(loop);
+}
+loop();
+
+document.addEventListener('keydown',function(e){
+ let lane=keys.indexOf(e.key.toLowerCase());
+ if(lane<0) return;
+
+ lanes[lane].style.background='rgba(255,255,255,.4)';
+ setTimeout(()=>lanes[lane].style.background='',100);
+
+ let hit=false;
+ for(let i=0;i<notes.length;i++){
+   if(notes[i].lane===lane && Math.abs(notes[i].y-500)<60){
+      hit=true;
+      score+=100;
+      scoreEl.textContent='Score: '+score;
+      msg.textContent='PERFECT!';
+      msg.style.color='lime';
+      notes[i].el.remove();
+      notes.splice(i,1);
+      break;
+   }
+ }
+ if(!hit){
+   msg.textContent='MISS';
+   msg.style.color='red';
+ }
+});
+</script>
+</body>
+</html>
